@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "net/http"
     "strings"
+    "log"
 )
 
 type AnagramResult struct {
@@ -26,20 +27,19 @@ func anagrams (w http.ResponseWriter, r *http.Request) {
 	word := strings.SplitN(r.URL.Path, "/", 3)[2]
 	var a AnagramResult
 
-	if  len(word)>5 {
-		http.Error(w, "Currently not supporting anagrams with more then 5 letters", http.StatusInternalServerError)
+	if  len(word)>9 {
+		http.Error(w, "Currently not supporting anagrams with more then nine letters", http.StatusInternalServerError)
 		return
 	}
-
+	
 	a.Word = word
-	a.Anagrams = getPerms(word)
-
+	a.Anagrams = removeDuplicates(getPerms(word))
+	log.Println("Debug: ",a.Word,a.Anagrams)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(a)
 }
 
 func getPerms(str string) []string {
-	// base case, for one char, all perms are [char]
 	if len(str) == 1 {
 		return []string{str}
 	}
@@ -63,9 +63,22 @@ func getPerms(str string) []string {
 	return allPerms
 }
 
-// Insert a char in a word
 func insertAt(i int, char string, perm string) string {
 	start := perm[0:i]
 	end := perm[i:len(perm)]
 	return start + char + end
+}
+
+func removeDuplicates(in []string) []string {
+	out := make([]string,len(in))
+	found := make (map[string]bool)
+	j := 0
+	for _, x := range in {
+		if !found[x] {
+			found[x] = true
+			out[j]=x
+			j++
+		}
+	}
+	return out[:j]
 }
