@@ -14,7 +14,7 @@ The process of building and deploying the anagram service is controlled via Make
 	git clone https://github.com/marikgoran/anagrams
 	cd anagrams/
 	make 			# to show the usage
-	make container	# builds the code and makes the docker image
+	make container		# builds the code and makes the docker image
 	make deploy		# run the container based on the build image and exposes port 8080
 	make tests		# runs few tests to check the functionality of the service
 	make clean		# stops the container and deletes the image and the binary
