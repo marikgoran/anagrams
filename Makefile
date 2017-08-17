@@ -11,6 +11,7 @@ deploy:
 clean:
 	@docker ps --filter "ancestor=anagrams" -q | xargs -i docker stop {} 
 	@docker rmi anagrams --force 2> /dev/null || true
+	@#docker rmi -f $(docker images -q -f dangling=true) || true
 	@rm -f anagrams 
 	
 tests:
