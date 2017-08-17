@@ -1,40 +1,45 @@
 package main
 
 import (
-    "encoding/json"
-    "net/http"
-    "strings"
-    "log"
+	"encoding/json"
+	"log"
+	"net/http"
+	"strings"
 )
 
+// The word and its anagrams
 type AnagramResult struct {
-    Word	   string
-    Anagrams []string
+	Word     string
+	Anagrams []string
 }
 
 func main() {
-    http.HandleFunc("/hello", hello)
-    http.HandleFunc("/anagrams/", anagrams )
+	http.HandleFunc("/hello", hello)
+	http.HandleFunc("/anagrams/", anagrams)
 
-    http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", nil)
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("hello!"))
+	w.Write([]byte("hello!"))
 }
 
-func anagrams (w http.ResponseWriter, r *http.Request) {
+func anagrams(w http.ResponseWriter, r *http.Request) {
 	word := strings.SplitN(r.URL.Path, "/", 3)[2]
 	var a AnagramResult
 
-	if  len(word)>9 {
+	if len(word) == 0 {
+		return
+	}
+
+	if len(word) > 9 {
 		http.Error(w, "Currently not supporting anagrams with more then nine letters", http.StatusInternalServerError)
 		return
 	}
-	
+
 	a.Word = word
 	a.Anagrams = removeDuplicates(getPerms(word))
-	log.Println("Debug: ",a.Word,a.Anagrams)
+	log.Println("Debug: ", a.Word, a.Anagrams)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(a)
 }
@@ -45,7 +50,7 @@ func getPerms(str string) []string {
 	}
 
 	current := str[0:1] // current char
-	remStr := str[1:] // remaining string
+	remStr := str[1:]   // remaining string
 
 	perms := getPerms(remStr) // get perms for remaining string
 
@@ -53,7 +58,7 @@ func getPerms(str string) []string {
 
 	// for every perm in the perms of substring
 	for _, perm := range perms {
-	        // add current char at every possible position
+		// add current char at every possible position
 		for i := 0; i <= len(perm); i++ {
 			newPerm := insertAt(i, current, perm)
 			allPerms = append(allPerms, newPerm)
@@ -70,13 +75,13 @@ func insertAt(i int, char string, perm string) string {
 }
 
 func removeDuplicates(in []string) []string {
-	out := make([]string,len(in))
-	found := make (map[string]bool)
+	out := make([]string, len(in))
+	found := make(map[string]bool)
 	j := 0
 	for _, x := range in {
 		if !found[x] {
 			found[x] = true
-			out[j]=x
+			out[j] = x
 			j++
 		}
 	}
